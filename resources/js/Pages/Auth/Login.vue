@@ -167,8 +167,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Link, useForm } from '@inertiajs/vue3'
+import { ref, reactive } from 'vue'
+import { Link, useForm, router } from '@inertiajs/vue3'
 
 const showPassword = ref(false)
 
@@ -178,17 +178,24 @@ const form = useForm({
   remember: false
 })
 
-const errors = ref({})
+const errors = reactive({})
 const processing = ref(false)
 
 const login = () => {
   processing.value = true
+  // Nettoyer les erreurs précédentes
+  Object.keys(errors).forEach(k => delete errors[k])
+  
   form.post(route('login'), {
     onFinish: () => {
       processing.value = false
     },
-    onError: (error) => {
-      errors.value = error
+    onError: (errs) => {
+      Object.assign(errors, errs)
+    },
+    onSuccess: () => {
+      // Redirection automatique par Inertia
+      Object.keys(errors).forEach(k => delete errors[k])
     }
   })
 }
